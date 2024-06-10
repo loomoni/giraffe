@@ -24,6 +24,7 @@ class SaleOrderController(http.Controller):
             data = request.jsonrequest
 
             if not data:
+                _logger.error("No data provided in the request.")
                 return http.Response("No data provided", status=400)
 
             # Extract transaction data
@@ -31,7 +32,19 @@ class SaleOrderController(http.Controller):
             product_lines = data.get('product_lines')
 
             if not partner_id or not product_lines:
+                _logger.error("Missing partner_id or product_lines in the request data.")
                 return http.Response("Missing partner_id or product_lines", status=400)
+
+            # Validate stock levels for each product line
+            for line in product_lines:
+                product = request.env['product.product'].sudo().browse(line['product_id'])
+                if product.qty_available < line['quantity']:
+                    error_message = f"Insufficient stock for product {product.name}. Available: {product.qty_available}, Required: {line['quantity']}"
+                    _logger.error(error_message)
+                    return {
+                        'status': 'error',
+                        'message': error_message
+                    }
 
             # Create sale order
             sale_order = request.env['sale.order'].sudo().create({
@@ -42,6 +55,21 @@ class SaleOrderController(http.Controller):
                     'price_unit': line['price_unit'],
                 }) for line in product_lines]
             })
+
+            # Confirm the sale order
+            sale_order.action_confirm()
+
+            # Validate the stock picking (delivery order)
+            picking = sale_order.picking_ids.filtered(lambda p: p.state not in ('done', 'cancel'))
+            if picking:
+                picking.sudo().action_assign()  # Ensure picking is ready to be validated
+
+                # Process each move line to ensure the demand and delivered quantities match
+                for move_line in picking.move_line_ids:
+                    move_line.qty_done = move_line.product_uom_qty
+
+                # Validate the picking
+                picking.sudo().button_validate()
 
             # Prepare response data
             sale_order_data = {
@@ -64,7 +92,7 @@ class SaleOrderController(http.Controller):
             }
 
         except Exception as e:
-            _logger.error("Error creating sale order: %s", str(e))
+            _logger.error("Error creating sale order: %s", str(e), exc_info=True)
             return http.Response(str(e), status=500)
 
     # Get all sale posted
