@@ -71,6 +71,29 @@ class SaleOrderController(http.Controller):
                 # Validate the picking
                 picking.sudo().button_validate()
 
+            # Create invoice
+            invoice = sale_order._create_invoices()
+            if invoice:
+                invoice.sudo().action_post()
+
+                # payment = invoice.sudo().action_register_payment()
+                # if payment:
+                #     payment.sudo().action_create_payments()
+
+            # Register the payment
+            # payment_vals = {
+            #     'amount': invoice.amount_total,
+            #     'payment_date': invoice.Date.today(),
+            #     'payment_type': 'inbound',
+            #     'partner_id': partner_id,
+            #     'partner_type': 'customer',
+            #     'journal_id': request.env['account.journal'].sudo().search([('type', '=', 'bank')], limit=1).id,
+            #     'payment_method_id': request.env.ref('account.account_payment_method_manual_in').id,
+            #     'invoice_ids': [(6, 0, [invoice.id])],
+            # }
+            # payment = request.env['account.payment'].sudo().create(payment_vals)
+            # payment.sudo().post()
+
             # Prepare response data
             sale_order_data = {
                 'ID': sale_order.id,
