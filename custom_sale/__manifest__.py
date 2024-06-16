@@ -26,6 +26,8 @@
 
         'security/security.xml',
         'security/ir.model.access.csv',
+        'views/remove_login_brand.xml',
+        'views/views.xml',
     ],
 
     'license': 'AGPL-3',

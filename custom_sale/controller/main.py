@@ -29,6 +29,9 @@ class SaleOrderController(http.Controller):
 
             # Extract transaction data
             partner_id = data.get('partner_id')
+            pump_no = data.get('pump_no')
+            nozzle_no = data.get('nozzle_no')
+            pump_reading = data.get('pump_reading')
             product_lines = data.get('product_lines')
 
             if not partner_id or not product_lines:
@@ -49,10 +52,15 @@ class SaleOrderController(http.Controller):
             # Create sale order
             sale_order = request.env['sale.order'].sudo().create({
                 'partner_id': partner_id,
+                'pump_no': pump_no,
+                'nozzle_no': nozzle_no,
+                'pump_reading': pump_reading,
                 'order_line': [(0, 0, {
                     'product_id': line['product_id'],
                     'product_uom_qty': line['quantity'],
                     'price_unit': line['price_unit'],
+                    'price_subtotal': line['price_subtotal'],
+
                 }) for line in product_lines]
             })
 
