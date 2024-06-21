@@ -34,7 +34,8 @@ class SaleOrderLineInherit(models.Model):
         else:
             for record in self:
                 if not record.manual_price_subtotal:
-                    vals['price_subtotal'] = vals.get('product_uom_qty', record.product_uom_qty) * vals.get('price_unit', record.price_unit)
+                    vals['price_subtotal'] = vals.get('product_uom_qty', record.product_uom_qty) * vals.get(
+                        'price_unit', record.price_unit)
                     vals['manual_price_subtotal'] = False
         return super(SaleOrderLineInherit, self).write(vals)
 
@@ -43,7 +44,8 @@ class SaleOrderLineInherit(models.Model):
         for line in self:
             if not line.manual_price_subtotal:
                 line.price_subtotal = line.product_uom_qty * line.price_unit
-            taxes = line.tax_id.compute_all(line.price_subtotal, line.order_id.currency_id, line.product_uom_qty, product=line.product_id, partner=line.order_id.partner_shipping_id)
+            taxes = line.tax_id.compute_all(line.price_subtotal, line.order_id.currency_id, line.product_uom_qty,
+                                            product=line.product_id, partner=line.order_id.partner_shipping_id)
             line.update({
                 'price_tax': taxes['total_included'] - taxes['total_excluded'],
                 'price_total': taxes['total_included'],

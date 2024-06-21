@@ -1,14 +1,8 @@
-# from odoo import http
-# from odoo.http import request
-# import logging
-
-# _logger = logging.getLogger(__name__)
-
 import base64
 import json
 import logging
 
-from odoo import http
+from odoo import http, fields
 from odoo.http import request, _logger
 from odoo.tools.translate import _
 
@@ -29,25 +23,71 @@ class SaleOrderController(http.Controller):
 
             # Extract transaction data
             partner_id = data.get('partner_id')
+            product_lines = data.get('product_lines')
+            warehouse_id = data.get('warehouse_id')
             pump_no = data.get('pump_no')
             nozzle_no = data.get('nozzle_no')
             pump_reading = data.get('pump_reading')
-            product_lines = data.get('product_lines')
 
             if not partner_id or not product_lines:
-                _logger.error("Missing partner_id or product_lines in the request data.")
-                return http.Response("Missing partner_id or product_lines", status=400)
+                _logger.error("Missing partner_id, product_lines, or warehouse_id in the request data.")
+                return http.Response("Missing partner_id, product_lines, or warehouse_id", status=400)
 
-            # Validate stock levels for each product line
+            sale_order_lines = []
+
+            # Loop through each product line to find the corresponding product in the given warehouse
             for line in product_lines:
-                product = request.env['product.product'].sudo().browse(line['product_id'])
-                if product.qty_available < line['quantity']:
-                    error_message = f"Insufficient stock for product {product.name}. Available: {product.qty_available}, Required: {line['quantity']}"
+                station_product_id = line.get('station_product_id')
+                quantity = line.get('quantity')
+                # warehouse_id = line.get('warehouse_id')
+                price_subtotal = line.get('price_subtotal')
+
+                if not station_product_id or not quantity or not price_subtotal:
+                    _logger.error("Missing station_product_id, quantity, or price_unit in a product line.")
+                    return http.Response("Missing station_product_id, quantity, or price_unit in a product line",
+                                         status=400)
+
+                # Find the product based on warehouse_code and station_product_id in product_template
+                product_template = request.env['product.template'].sudo().search([
+                    ('warehouse_id.code', '=', warehouse_id),
+                    ('station_product_id', '=', station_product_id)
+                ], limit=1)
+
+                if not product_template:
+                    error_message = f"Product with warehouse_id '{warehouse_id}' and station_product_id '{station_product_id}' not found."
                     _logger.error(error_message)
                     return {
                         'status': 'error',
                         'message': error_message
                     }
+
+                # Find the product variant
+                product = request.env['product.product'].sudo().search([
+                    ('product_tmpl_id', '=', product_template.id)
+                ], limit=1)
+
+                if not product:
+                    error_message = f"Product variant for template ID {product_template.id} not found."
+                    _logger.error(error_message)
+                    return {
+                        'status': 'error',
+                        'message': error_message
+                    }
+
+                # Validate stock levels for the product
+                if product.qty_available < quantity:
+                    error_message = f"Insufficient stock for product {product.name}. Available: {product.qty_available}, Required: {quantity}"
+                    _logger.error(error_message)
+                    return {
+                        'status': 'error',
+                        'message': error_message
+                    }
+
+                sale_order_lines.append((0, 0, {
+                    'product_id': product.id,
+                    'product_uom_qty': quantity,
+                    'price_subtotal': price_subtotal,
+                }))
 
             # Create sale order
             sale_order = request.env['sale.order'].sudo().create({
@@ -55,17 +95,8 @@ class SaleOrderController(http.Controller):
                 'pump_no': pump_no,
                 'nozzle_no': nozzle_no,
                 'pump_reading': pump_reading,
-                'order_line': [(0, 0, {
-                    'product_id': line['product_id'],
-                    'product_uom_qty': line['quantity'],
-                    'price_unit': line['price_unit'],
-                    'price_subtotal': line['price_subtotal'],
-
-                }) for line in product_lines]
+                'order_line': sale_order_lines
             })
-
-
-
 
             # Confirm the sale order
             sale_order.action_confirm()
@@ -82,19 +113,15 @@ class SaleOrderController(http.Controller):
                 # Validate the picking
                 picking.sudo().button_validate()
 
-            # Create invoice
+            # Create and post the invoice
             invoice = sale_order._create_invoices()
             if invoice:
                 invoice.sudo().action_post()
 
-                # payment = invoice.sudo().action_register_payment()
-                # if payment:
-                #     payment.sudo().action_create_payments()
-
             # Register the payment
             # payment_vals = {
             #     'amount': invoice.amount_total,
-            #     'payment_date': invoice.Date.today(),
+            #     'payment_date': fields.Date.today(),
             #     'payment_type': 'inbound',
             #     'partner_id': partner_id,
             #     'partner_type': 'customer',
@@ -116,29 +143,17 @@ class SaleOrderController(http.Controller):
                     'ID': line.product_id.id,
                     'PRODUCT NAME': line.product_id.name,
                     'QTY': line.product_uom_qty,
-                    'AMT': line.price_unit,
+                    # 'AMT': line.price_unit,
                     'TOTAL AMOUNT': line.price_subtotal
                 })
 
             return {
                 'status': 'success',
-                'sale_order': sale_order_data
+                'sale_order': sale_order_data,
+                'invoice_id': invoice.id if invoice else None,
+                # 'payment_id': payment.id if payment else None
             }
 
         except Exception as e:
             _logger.error("Error creating sale order: %s", str(e), exc_info=True)
             return http.Response(str(e), status=500)
-
-    # Get all sale posted
-    @http.route('/get_sale', type='json', auth='user')
-    def get_sales(self):
-        sale_rec = request.env['sale.order'].search([])
-        sales = []
-        for rec in sale_rec:
-            vals = {
-                'id': rec.id,
-                'name': rec.partner_id.name
-            }
-            sales.append(vals)
-        data = {'status': 200, 'response': sales, 'message': 'Success'}
-        return data
