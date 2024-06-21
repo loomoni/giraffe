@@ -64,6 +64,9 @@ class SaleOrderController(http.Controller):
                 }) for line in product_lines]
             })
 
+
+
+
             # Confirm the sale order
             sale_order.action_confirm()
 
