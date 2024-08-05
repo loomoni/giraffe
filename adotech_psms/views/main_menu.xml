@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem
+            id="main_psms_id"
+            name="Psms sales"
+            web_icon="adotech_psms,static/description/icon.png" sequence="173"
+    />
+
+
+<!--    <menuitem-->
+<!--            id="action_psms_sales_list_id"-->
+<!--            name="Sales"-->
+<!--            sequence="1"-->
+<!--            parent="main_psms_id"-->
+<!--            action="action_psms_sales_list"-->
+<!--    />-->
+    <menuitem
+            id="action_psms_gateway_id"
+            name="Settings"
+            sequence="2"
+            parent="main_psms_id"
+    />
+        <menuitem
+            id="action_psms_api_id"
+            name="API settings"
+            sequence="1"
+            parent="action_psms_gateway_id"
+            action="action_psms_gateway"
+    />
+      <menuitem
+            id="action_psms_station_list_id"
+            name="Stations"
+            sequence="2"
+            parent="action_psms_gateway_id"
+            action="action_psms_station_list"
+    />
+
+
+
+</odoo>

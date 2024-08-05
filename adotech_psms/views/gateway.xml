@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_psms_gateway" model="ir.actions.act_window">
+        <field name="name">Gateway</field>
+        <field name="res_model">psms.gateway</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="psms_gateway_form" model="ir.ui.view">
+        <field name="name">psms.gateway.form</field>
+        <field name="model">psms.gateway</field>
+        <field name="arch" type="xml">
+
+            <form string="Gateway Form">
+
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="login_url"/>
+                        <field name="sales_url"/>
+                        <field name="username"/>
+                        <field name="password"/>
+                    </group>
+
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="psms_gateway_tree_view" model="ir.ui.view">
+        <field name="name">psms.gateway.tree.view</field>
+        <field name="model">psms.gateway</field>
+        <field name="arch" type="xml">
+            <tree string="Sales">
+
+                    <field name="name"/>
+                    <field name="login_url"/>
+                    <field name="sales_url"/>
+                    <field name="username"/>
+                    <field name="password"/>
+
+            </tree>
+        </field>
+    </record>
+
+</odoo>

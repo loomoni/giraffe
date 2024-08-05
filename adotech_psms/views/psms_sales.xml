@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<!--    <record id="action_psms_sales_list" model="ir.actions.act_window">-->
+<!--        <field name="name">Sales</field>-->
+<!--        <field name="res_model">psms.sales</field>-->
+<!--        <field name="view_mode">tree,form</field>-->
+<!--    </record>-->
+
+<!--    <record id="psms_sales_form" model="ir.ui.view">-->
+<!--        <field name="name">psms.sales.form</field>-->
+<!--        <field name="model">psms.sales</field>-->
+<!--        <field name="arch" type="xml">-->
+
+<!--            <form string="Sales Entry Form">-->
+<!--                <sheet>-->
+<!--                    <group>-->
+<!--                        <field name="name"/>-->
+<!--                        <field name="serial_number"/>-->
+<!--                        <field name="price"/>-->
+<!--                        <field name="volume"/>-->
+<!--                        <field name="transaction_date"/>-->
+<!--                    </group>-->
+
+<!--                </sheet>-->
+<!--            </form>-->
+<!--        </field>-->
+<!--    </record>-->
+
+<!--    &lt;!&ndash; Tree view &ndash;&gt;-->
+<!--    <record id="psms_sales_tree_view" model="ir.ui.view">-->
+<!--        <field name="name">psms.sales.tree.view</field>-->
+<!--        <field name="model">psms.sales</field>-->
+<!--        <field name="arch" type="xml">-->
+<!--            <tree string="Sales">-->
+<!--                <field name="name"/>-->
+<!--                <field name="transaction_date"/>-->
+<!--                <field name="transaction_time"/>-->
+<!--                <field name="price"/>-->
+<!--                <field name="volume"/>-->
+<!--                <field name="total_amount"/>-->
+<!--                <field name="serial_number_receipt_number"/>-->
+
+<!--            </tree>-->
+<!--        </field>-->
+<!--    </record>-->
+
+
+</odoo>

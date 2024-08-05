@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_psms_station_list" model="ir.actions.act_window">
+        <field name="name">Stations</field>
+        <field name="res_model">psms.station</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="psms_station_form" model="ir.ui.view">
+        <field name="name">psms.station.form</field>
+        <field name="model">psms.station</field>
+        <field name="arch" type="xml">
+
+            <form string="Station Form">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="serial_number"/>
+                        <field name="location"/>
+                    </group>
+
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Tree view -->
+    <record id="psms_station_tree_view" model="ir.ui.view">
+        <field name="name">psms.station.tree.view</field>
+        <field name="model">psms.station</field>
+        <field name="arch" type="xml">
+            <tree string="Stations">
+                <field name="name"/>
+                <field name="serial_number"/>
+                <field name="location"/>
+
+            </tree>
+        </field>
+    </record>
+
+
+</odoo>

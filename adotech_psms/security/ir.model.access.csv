@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_psms,psms_gateway,model_psms_gateway,base.group_user,1,1,1,1
+access_psms_station,psms_station,model_psms_station,base.group_user,1,1,1,1
+
+
+
